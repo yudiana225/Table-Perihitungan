@@ -4,7 +4,6 @@ import { calculateLoan } from './utils/calculator';
 import { LoanForm } from './components/LoanForm';
 import { OfficialTableDocument } from './components/OfficialTableDocument';
 import { StatsDashboard } from './components/StatsDashboard';
-import { PWAInstallBanner } from './components/PWAInstallBanner';
 
 const DEFAULT_PARAMS: LoanParams = {
   nominal: 100000000,
@@ -47,23 +46,10 @@ export default function App() {
               %
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="font-extrabold text-slate-900 text-lg sm:text-xl tracking-tight">
-                  Tabel Perhitungan Bunga Pinjaman
-                </h1>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60">
-                  Bento Edition
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 hidden sm:block">
-                Kalkulator simulasi pinjaman, jadwal amortisasi resmi & ekspor dokumen siap cetak
-              </p>
+              <h1 className="font-extrabold text-slate-900 text-lg sm:text-xl tracking-tight">
+                Tabel Perhitungan Bunga Pinjaman
+              </h1>
             </div>
-          </div>
-
-          {/* PWA Install & Offline Status */}
-          <div className="flex items-center gap-3">
-            <PWAInstallBanner />
           </div>
         </div>
       </header>
