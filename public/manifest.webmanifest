@@ -1,0 +1,30 @@
+{
+  "name": "Kalkulator & Tabel Bunga Pinjaman",
+  "short_name": "Tabel Pinjaman",
+  "description": "Aplikasi kalkulator dan simulasi tabel rincian pembayaran cicilan pinjaman (Flat, Efektif, Anuitas) dengan format cetak resmi dan ekspor data.",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#4F46E5",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512 any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "business", "productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Kalkulator Pinjaman",
+      "short_name": "Kalkulator",
+      "description": "Buka kalkulator dan simulasi cicilan pinjaman",
+      "url": "/",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    }
+  ]
+}
