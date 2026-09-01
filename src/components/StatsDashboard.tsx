@@ -1,7 +1,7 @@
 import React from 'react';
 import { LoanParams, LoanCalculationResult } from '../types';
 import { formatRupiah, formatPercent } from '../utils/calculator';
-import { TrendingUp, CreditCard, ShieldCheck } from 'lucide-react';
+import { TrendingUp, CreditCard, ShieldCheck, Wallet, Receipt } from 'lucide-react';
 
 interface StatsDashboardProps {
   params: LoanParams;
@@ -18,17 +18,17 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ params, result }
 
   return (
     <div id="stats-dashboard" className="space-y-6">
-      {/* Bento Grid: 3 Quick Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Card 1: Cicilan Per Bulan (Bento Tile) */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 shrink-0">
-              <CreditCard className="w-6 h-6" />
+      {/* Bento Grid: Quick Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Cicilan Per Bulan */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 shrink-0">
+              <CreditCard className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Cicilan Per Bulan</p>
-              <p className="text-2xl font-bold text-slate-900 tracking-tight">
+              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Cicilan Per Bulan</p>
+              <p className="text-xl font-extrabold text-slate-900 tracking-tight">
                 {params.method === 'FLAT' || params.method === 'ANUITAS'
                   ? formatRupiah(result.monthlyInstallment)
                   : `${formatRupiah(result.firstMonthInstallment)}`}
@@ -37,45 +37,64 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ params, result }
           </div>
           <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
             <span>Metode: <strong className="text-slate-800">{params.method}</strong></span>
-            <span className="text-emerald-700 font-semibold">{params.tenorMonths}x Pembayaran</span>
+            <span className="text-emerald-700 font-semibold">{params.tenorMonths}x</span>
           </div>
         </div>
 
-        {/* Card 2: Total Bunga (Bento Tile) */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600 shrink-0">
-              <TrendingUp className="w-6 h-6" />
+        {/* Card 2: Total Bunga */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600 shrink-0">
+              <TrendingUp className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Bunga ({params.annualRate}%)</p>
-              <p className="text-2xl font-bold text-amber-700 tracking-tight">
+              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Total Bunga ({params.annualRate}%)</p>
+              <p className="text-xl font-extrabold text-amber-700 tracking-tight">
                 {formatRupiah(result.totalInterest)}
               </p>
             </div>
           </div>
           <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-            <span>Porsi: <strong className="text-amber-800">{formatPercent(interestRatio, 1)}</strong> dari pokok</span>
+            <span>Porsi: <strong className="text-amber-800">{formatPercent(interestRatio, 1)}</strong></span>
             <span className="text-slate-600 font-mono">{(params.annualRate / 12).toFixed(2)}%/bln</span>
           </div>
         </div>
 
-        {/* Card 3: Total Pengembalian (Bento Tile) */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between sm:col-span-2 lg:col-span-1">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600 shrink-0">
-              <ShieldCheck className="w-6 h-6" />
+        {/* Card 3: Pencairan Bersih Diterima */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-teal-100 rounded-2xl flex items-center justify-center text-teal-600 shrink-0">
+              <Wallet className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Pembayaran</p>
-              <p className="text-2xl font-bold text-slate-900 tracking-tight">
+              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Pencairan Bersih</p>
+              <p className="text-xl font-extrabold text-teal-700 tracking-tight">
+                {formatRupiah(result.netDisbursement)}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <span>Potongan Biaya:</span>
+            <span className="text-rose-600 font-bold">{formatRupiah(result.totalFees)}</span>
+          </div>
+        </div>
+
+        {/* Card 4: Total Pengembalian */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600 shrink-0">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Total Pembayaran</p>
+              <p className="text-xl font-extrabold text-slate-900 tracking-tight">
                 {formatRupiah(result.totalPayment)}
               </p>
             </div>
           </div>
           <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-            <span>Pokok + Bunga Total</span>
-            <span className="text-indigo-600 font-bold">Lunas {params.tenorMonths} Bln</span>
+            <span>Pokok + Bunga</span>
+            <span className="text-indigo-600 font-bold">{params.tenorMonths} Bln Lunas</span>
           </div>
         </div>
       </div>
@@ -159,3 +178,4 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ params, result }
     </div>
   );
 };
+

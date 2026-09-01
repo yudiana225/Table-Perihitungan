@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { LoanParams, LoanCalculationResult, InstallmentRow, InterestMethod } from '../types';
+import { LoanParams, LoanCalculationResult, InstallmentRow, InterestMethod, LoanFee, FeeBreakdownItem } from '../types';
 
 export const INDONESIAN_MONTHS = [
   'Januari',
@@ -15,6 +15,14 @@ export const INDONESIAN_MONTHS = [
   'November',
   'Desember',
 ];
+
+export function calculateFeeAmount(fee: LoanFee, nominal: number): number {
+  if (!fee.enabled || fee.value <= 0 || nominal <= 0) return 0;
+  if (fee.type === 'PERCENTAGE') {
+    return Math.round((nominal * fee.value) / 100);
+  }
+  return Math.round(fee.value);
+}
 
 export function formatRupiah(amount: number, prefix: boolean = true): string {
   if (isNaN(amount)) return prefix ? 'Rp 0' : '0';
@@ -128,6 +136,18 @@ export function numberToWordsIndonesian(n: number): string {
 export function calculateLoan(params: LoanParams): LoanCalculationResult {
   const { nominal, annualRate, tenorMonths, startMonth, startYear, method } = params;
 
+  const fees = params.fees || [];
+  const feeBreakdown: FeeBreakdownItem[] = fees.map((fee) => ({
+    fee,
+    amount: calculateFeeAmount(fee, nominal),
+  }));
+
+  const totalFees = feeBreakdown
+    .filter((item) => item.fee.enabled)
+    .reduce((sum, item) => sum + item.amount, 0);
+
+  const netDisbursement = Math.max(0, nominal - totalFees);
+
   if (nominal <= 0 || tenorMonths <= 0) {
     return {
       rows: [],
@@ -139,6 +159,10 @@ export function calculateLoan(params: LoanParams): LoanCalculationResult {
       lastMonthInstallment: 0,
       monthlyRate: 0,
       effectiveRateDisplay: '0%',
+      feeBreakdown,
+      totalFees,
+      netDisbursement,
+      totalCostOfLoan: totalFees,
     };
   }
 
@@ -255,6 +279,7 @@ export function calculateLoan(params: LoanParams): LoanCalculationResult {
   const totalPrincipal = rows.reduce((sum, r) => sum + r.principal, 0);
   const totalInterest = rows.reduce((sum, r) => sum + r.interest, 0);
   const totalPayment = totalPrincipal + totalInterest;
+  const totalCostOfLoan = totalPayment + totalFees;
 
   return {
     rows,
@@ -266,6 +291,10 @@ export function calculateLoan(params: LoanParams): LoanCalculationResult {
     lastMonthInstallment: rows[rows.length - 1]?.total || 0,
     monthlyRate,
     effectiveRateDisplay: `${annualRate}% / Tahun (${formatPercent(monthlyRate, 3)}/bln)`,
+    feeBreakdown,
+    totalFees,
+    netDisbursement,
+    totalCostOfLoan,
   };
 }
 
@@ -273,7 +302,7 @@ export function exportToExcel(params: LoanParams, result: LoanCalculationResult)
   const wb = XLSX.utils.book_new();
 
   // Create Header metadata
-  const headerData = [
+  const headerData: any[][] = [
     ['RINCIAN PEMBAYARAN CICILAN PINJAMAN'],
     [''],
     ['LENDER / PEMBERI PINJAMAN', ':', params.lenderName || '-'],
@@ -285,9 +314,21 @@ export function exportToExcel(params: LoanParams, result: LoanCalculationResult)
     ['JANGKA WAKTU (BULAN)', ':', params.tenorMonths],
     ['PEMBAYARAN DIMULAI', ':', `${params.paymentTiming} MULAI ${INDONESIAN_MONTHS[params.startMonth].toUpperCase()} ${params.startYear}`],
     ['CICILAN PER BULAN', ':', result.rows[0]?.total || 0],
-    [''],
-    ['No', 'BULAN / TAHUN', 'POKOK CICILAN', 'BUNGA', 'JUMLAH CICILAN', 'SISA POKOK'],
+    ['TOTAL BIAYA DIAWAL', ':', result.totalFees],
+    ['PENCAIRAN BERSIH', ':', result.netDisbursement],
   ];
+
+  if (result.feeBreakdown && result.feeBreakdown.length > 0) {
+    headerData.push(['']);
+    headerData.push(['RINCIAN BIAYA-BIAYA PINJAMAN:']);
+    result.feeBreakdown.forEach((item) => {
+      const typeLabel = item.fee.type === 'PERCENTAGE' ? `(${item.fee.value}%)` : '(Nominal Tetap)';
+      headerData.push([` - ${item.fee.name} ${typeLabel}`, ':', item.amount, item.fee.enabled ? 'Aktif' : 'Non-aktif']);
+    });
+  }
+
+  headerData.push(['']);
+  headerData.push(['No', 'BULAN / TAHUN', 'POKOK CICILAN', 'BUNGA', 'JUMLAH CICILAN', 'SISA POKOK']);
 
   const tableRows = result.rows.map((row) => [
     row.no,
@@ -326,7 +367,7 @@ export function exportToExcel(params: LoanParams, result: LoanCalculationResult)
   // Set column widths
   ws['!cols'] = [
     { wch: 8 },
-    { wch: 22 },
+    { wch: 24 },
     { wch: 18 },
     { wch: 18 },
     { wch: 18 },
@@ -342,7 +383,19 @@ export function exportToCSV(params: LoanParams, result: LoanCalculationResult) {
   csv += `Nominal Pinjaman: ${params.nominal}\n`;
   csv += `Bunga: ${params.annualRate}% / Tahun\n`;
   csv += `Tenor: ${params.tenorMonths} Bulan\n`;
-  csv += `Metode: ${params.method}\n\n`;
+  csv += `Metode: ${params.method}\n`;
+  csv += `Total Biaya: ${result.totalFees}\n`;
+  csv += `Pencairan Bersih: ${result.netDisbursement}\n\n`;
+
+  if (result.feeBreakdown && result.feeBreakdown.length > 0) {
+    csv += `RINCIAN BIAYA PINJAMAN\n`;
+    csv += `Kategori,Nama Biaya,Tipe,Nilai,Jumlah (Rp),Status\n`;
+    result.feeBreakdown.forEach((item) => {
+      csv += `"${item.fee.category}","${item.fee.name}","${item.fee.type}",${item.fee.value},${item.amount},"${item.fee.enabled ? 'Aktif' : 'Non-Aktif'}"\n`;
+    });
+    csv += `\n`;
+  }
+
   csv += `No,Bulan/Tahun,Pokok Cicilan,Bunga,Jumlah,Sisa Pokok\n`;
 
   result.rows.forEach((r) => {

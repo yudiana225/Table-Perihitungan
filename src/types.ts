@@ -8,6 +8,24 @@ export type TableStyleTheme =
 
 export type TableDensity = 'compact' | 'comfortable';
 
+export type FeeType = 'FIXED' | 'PERCENTAGE';
+export type FeeCategory = 'ADMIN' | 'PROVISI' | 'ASURANSI' | 'METERAI' | 'LAINNYA';
+
+export interface LoanFee {
+  id: string;
+  name: string;
+  category: FeeCategory;
+  type: FeeType; // FIXED = Rp, PERCENTAGE = % dari pokok pinjaman
+  value: number;
+  enabled: boolean;
+  notes?: string;
+}
+
+export interface FeeBreakdownItem {
+  fee: LoanFee;
+  amount: number;
+}
+
 export interface LoanParams {
   nominal: number;
   annualRate: number;
@@ -26,6 +44,7 @@ export interface LoanParams {
   signDateDay: string;
   signDateMonth: string;
   signDateYear: number;
+  fees?: LoanFee[];
 }
 
 export interface InstallmentRow {
@@ -49,4 +68,9 @@ export interface LoanCalculationResult {
   lastMonthInstallment: number;
   monthlyRate: number;
   effectiveRateDisplay: string;
+  feeBreakdown: FeeBreakdownItem[];
+  totalFees: number;
+  netDisbursement: number; // Nominal - totalFees
+  totalCostOfLoan: number; // TotalPayment + totalFees
 }
+

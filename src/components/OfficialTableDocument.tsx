@@ -69,6 +69,7 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
   const [showRemainingColumn, setShowRemainingColumn] = useState(false);
+  const [showFeesBreakdown, setShowFeesBreakdown] = useState(true);
   const [tableTheme, setTableTheme] = useState<TableStyleTheme>('executive-navy');
   const [density, setDensity] = useState<TableDensity>('comfortable');
   const [isEditLocked, setIsEditLocked] = useState(false);
@@ -232,9 +233,7 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
                   {params.tenorMonths} Bulan
                 </span>
               </div>
-              <p className="text-xs text-slate-500">
-                Pilih gaya tampilan (UI Style), edit teks langsung, dan cetak lembar resmi
-              </p>
+              {/* Subtitle removed per request */}
             </div>
           </div>
 
@@ -302,10 +301,6 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
           {/* UI Style Theme Chips */}
           <div className="md:col-span-8 flex flex-wrap items-center gap-1.5">
-            <span className="text-xs font-bold text-slate-500 flex items-center gap-1 mr-1">
-              <Palette className="w-3.5 h-3.5 text-indigo-600" />
-              <span>UI Style:</span>
-            </span>
             {UI_STYLE_OPTIONS.map((style) => (
               <button
                 key={style.id}
@@ -367,6 +362,23 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
               <Eye className="w-3.5 h-3.5" />
               <span>{showRemainingColumn ? 'Sisa Pokok: On' : '+ Sisa Pokok'}</span>
             </button>
+
+            {/* Biaya & Pencairan Toggle (if fees exist) */}
+            {result.feeBreakdown && result.feeBreakdown.length > 0 && (
+              <button
+                type="button"
+                id="btn-toggle-fees-doc"
+                onClick={() => setShowFeesBreakdown(!showFeesBreakdown)}
+                className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-xl border transition-all ${
+                  showFeesBreakdown
+                    ? 'bg-indigo-100 border-indigo-300 text-indigo-900 font-bold'
+                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                }`}
+                title="Tampilkan/sembunyikan rincian biaya potongan & pencairan bersih di dokumen"
+              >
+                <span>{showFeesBreakdown ? 'Biaya: On' : '+ Biaya'}</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -410,8 +422,8 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
           <div className="flex items-center justify-between text-xs bg-amber-50/70 border border-amber-200/80 px-3.5 py-2 rounded-2xl text-amber-900">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
-              <span>
-                <strong>Mode Edit Interaktif Aktif:</strong> Anda dapat langsung mengklik judul, nama Lender, alamat, jabatan, dan kolom tanda tangan di lembar dokumen di bawah untuk mengubahnya.
+              <span className="font-bold">
+                Edit Table
               </span>
             </div>
             <button
@@ -548,6 +560,42 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
                     : `${formatNumberIndo(result.firstMonthInstallment)} s/d ${formatNumberIndo(result.lastMonthInstallment)}`}
                 </div>
               </div>
+
+              {/* Row 6: Rincian Potongan Biaya & Pencairan Bersih (if enabled and present) */}
+              {showFeesBreakdown && result.feeBreakdown && result.feeBreakdown.length > 0 && (
+                <div className={`p-2 sm:p-2.5 bg-slate-50/80 space-y-1.5 border-t ${themeClasses.metaDivider}`}>
+                  <div className="flex flex-wrap items-center justify-between gap-1 text-xs">
+                    <span className="font-extrabold uppercase text-slate-800">
+                      RINCIAN BIAYA AWAL ({result.feeBreakdown.length} Item):
+                    </span>
+                    <span className="font-bold text-rose-700">
+                      Total Potongan: Rp {formatNumberIndo(result.totalFees)}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    {result.feeBreakdown.map((item, idx) => (
+                      <span
+                        key={item.fee.id || `fee-item-${idx}`}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[11px] text-slate-700 font-medium"
+                      >
+                        <span className="font-bold text-slate-900">{item.fee.name}:</span>
+                        <span className="text-slate-800">Rp {formatNumberIndo(item.amount)}</span>
+                        {item.fee.type === 'PERCENTAGE' && (
+                          <span className="text-[10px] text-slate-500">({item.fee.value}%)</span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 font-extrabold text-xs sm:text-sm">
+                    <span className="uppercase text-emerald-900">
+                      PENCAIRAN DANA BERSIH (DITERIMA PEMINJAM):
+                    </span>
+                    <span className="text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-md">
+                      Rp {formatNumberIndo(result.netDisbursement)}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Schedule Table */}
@@ -576,43 +624,54 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
                   </tr>
                 </thead>
                 <tbody className={`font-semibold ${tableTheme === 'classic-official' ? 'divide-y divide-black' : 'divide-y divide-slate-200'}`}>
-                  {displayedRows.map((row) => {
-                    const isHovered = hoveredRowNo === row.no;
-                    const paidPercentage = (((params.nominal - row.remainingPrincipal) / (params.nominal || 1)) * 100).toFixed(1);
-
-                    return (
-                      <tr
-                        key={row.no}
-                        onMouseEnter={() => setHoveredRowNo(row.no)}
-                        onMouseLeave={() => setHoveredRowNo(null)}
-                        className={`transition-colors relative ${themeClasses.tableRowHover} ${
-                          row.no % 2 === 0 ? themeClasses.tableRowEven : themeClasses.tableRowOdd
-                        } ${isHovered ? 'bg-amber-100/50' : ''}`}
+                  {displayedRows.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={showRemainingColumn ? 6 : 5}
+                        className="py-8 text-center text-slate-400 font-medium italic bg-slate-50/50"
                       >
-                        <td className={`${cellPadding} text-center ${themeClasses.tableCellBorder} font-bold`}>
-                          {row.no}
-                        </td>
-                        <td className={`${cellPadding} ${themeClasses.tableCellBorder} text-left`}>
-                          <span className="inline-block w-24 sm:w-28">{row.monthName}</span>
-                          <span className="font-bold">{row.year}</span>
-                        </td>
-                        <td className={`${cellPadding} text-right ${themeClasses.tableCellBorder} font-mono font-medium`}>
-                          {formatNumberIndo(row.principal)}
-                        </td>
-                        <td className={`${cellPadding} text-right ${themeClasses.tableCellBorder} font-mono font-medium text-slate-800`}>
-                          {formatNumberIndo(row.interest)}
-                        </td>
-                        <td className={`${cellPadding} text-right font-mono font-bold text-slate-950`}>
-                          {formatNumberIndo(row.total)}
-                        </td>
-                        {showRemainingColumn && (
-                          <td className={`${cellPadding} text-right ${themeClasses.tableCellBorder} font-mono text-slate-600 bg-slate-50/50`}>
-                            {formatNumberIndo(row.remainingPrincipal)}
+                        Data parameter pinjaman kosong. Masukkan nominal dan tenor untuk memuat rincian angsuran.
+                      </td>
+                    </tr>
+                  ) : (
+                    displayedRows.map((row) => {
+                      const isHovered = hoveredRowNo === row.no;
+                      const paidPercentage = (((params.nominal - row.remainingPrincipal) / (params.nominal || 1)) * 100).toFixed(1);
+
+                      return (
+                        <tr
+                          key={row.no}
+                          onMouseEnter={() => setHoveredRowNo(row.no)}
+                          onMouseLeave={() => setHoveredRowNo(null)}
+                          className={`transition-colors relative ${themeClasses.tableRowHover} ${
+                            row.no % 2 === 0 ? themeClasses.tableRowEven : themeClasses.tableRowOdd
+                          } ${isHovered ? 'bg-amber-100/50' : ''}`}
+                        >
+                          <td className={`${cellPadding} text-center ${themeClasses.tableCellBorder} font-bold`}>
+                            {row.no}
                           </td>
-                        )}
-                      </tr>
-                    );
-                  })}
+                          <td className={`${cellPadding} ${themeClasses.tableCellBorder} text-left`}>
+                            <span className="inline-block w-24 sm:w-28">{row.monthName}</span>
+                            <span className="font-bold">{row.year}</span>
+                          </td>
+                          <td className={`${cellPadding} text-right ${themeClasses.tableCellBorder} font-mono font-medium`}>
+                            {formatNumberIndo(row.principal)}
+                          </td>
+                          <td className={`${cellPadding} text-right ${themeClasses.tableCellBorder} font-mono font-medium text-slate-800`}>
+                            {formatNumberIndo(row.interest)}
+                          </td>
+                          <td className={`${cellPadding} text-right font-mono font-bold text-slate-950`}>
+                            {formatNumberIndo(row.total)}
+                          </td>
+                          {showRemainingColumn && (
+                            <td className={`${cellPadding} text-right ${themeClasses.tableCellBorder} font-mono text-slate-600 bg-slate-50/50`}>
+                              {formatNumberIndo(row.remainingPrincipal)}
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })
+                  )}
 
                   {/* Total Row */}
                   <tr className={themeClasses.tableTotalRow}>

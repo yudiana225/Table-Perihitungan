@@ -1,9 +1,44 @@
 import React, { useState, useMemo } from 'react';
-import { LoanParams } from './types';
+import { LoanParams, LoanFee } from './types';
 import { calculateLoan } from './utils/calculator';
 import { LoanForm } from './components/LoanForm';
 import { OfficialTableDocument } from './components/OfficialTableDocument';
 import { StatsDashboard } from './components/StatsDashboard';
+
+const DEFAULT_FEES: LoanFee[] = [
+  {
+    id: 'fee-admin-1',
+    category: 'ADMIN',
+    name: 'biaya admin',
+    type: 'FIXED',
+    value: 500000,
+    enabled: true,
+  },
+  {
+    id: 'fee-provisi-1',
+    category: 'PROVISI',
+    name: 'biaya profinsi',
+    type: 'PERCENTAGE',
+    value: 1.0,
+    enabled: true,
+  },
+  {
+    id: 'fee-asuransi-1',
+    category: 'ASURANSI',
+    name: 'biaya asuransi',
+    type: 'PERCENTAGE',
+    value: 0.5,
+    enabled: true,
+  },
+  {
+    id: 'fee-meterai-1',
+    category: 'METERAI',
+    name: 'biaya matre (1.2.3 Lmbr)',
+    type: 'FIXED',
+    value: 20000,
+    enabled: true,
+  },
+];
 
 const DEFAULT_PARAMS: LoanParams = {
   nominal: 100000000,
@@ -23,6 +58,28 @@ const DEFAULT_PARAMS: LoanParams = {
   signDateDay: '',
   signDateMonth: '',
   signDateYear: 2026,
+  fees: DEFAULT_FEES,
+};
+
+const EMPTY_PARAMS: LoanParams = {
+  nominal: 0,
+  annualRate: 0,
+  tenorMonths: 0,
+  startMonth: new Date().getMonth(),
+  startYear: new Date().getFullYear(),
+  method: 'FLAT',
+  paymentTiming: '',
+  lenderName: '',
+  lenderIdentity: '',
+  lenderAddress: '',
+  borrowerName: '',
+  borrowerTitle: '',
+  borrowerOrganization: '',
+  signCity: '',
+  signDateDay: '',
+  signDateMonth: '',
+  signDateYear: new Date().getFullYear(),
+  fees: [],
 };
 
 export default function App() {
@@ -33,7 +90,7 @@ export default function App() {
   }, [params]);
 
   const handleReset = () => {
-    setParams(DEFAULT_PARAMS);
+    setParams(EMPTY_PARAMS);
   };
 
   return (
@@ -85,20 +142,6 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="no-print bg-white border-t border-slate-200/80 mt-auto py-5 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-700">Tabel Perhitungan Bunga Pinjaman</span>
-            <span>—</span>
-            <span>Standar Finansial Koperasi & Perbankan Indonesia</span>
-          </div>
-          <div className="flex items-center gap-4 text-slate-400">
-            <span>Amortisasi Flat, Efektif & Anuitas</span>
-            <span>•</span>
-            <span>Ekspor Excel & Cetak PDF</span>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

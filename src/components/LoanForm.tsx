@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LoanParams, InterestMethod } from '../types';
 import { INDONESIAN_MONTHS, formatRupiah, formatPercent } from '../utils/calculator';
+import { LoanFeesManager } from './LoanFeesManager';
 import {
   Calculator,
   Calendar,
@@ -155,10 +156,10 @@ export const LoanForm: React.FC<LoanFormProps> = ({ params, onChange, onReset })
                   <input
                     id="input-tenor"
                     type="number"
-                    min="1"
+                    min="0"
                     max="360"
                     value={params.tenorMonths || ''}
-                    onChange={(e) => updateParam('tenorMonths', Math.max(1, parseInt(e.target.value) || 1))}
+                    onChange={(e) => updateParam('tenorMonths', Math.max(0, parseInt(e.target.value) || 0))}
                     className="bg-transparent text-2xl font-extrabold text-white w-full focus:outline-none placeholder-indigo-300/50"
                     placeholder="12"
                   />
@@ -471,6 +472,13 @@ export const LoanForm: React.FC<LoanFormProps> = ({ params, onChange, onReset })
           </div>
         )}
       </div>
+
+      {/* CRUD Biaya-Biaya Pinjaman (Admin, Provisi, Asuransi, Meterai, Lainnya) */}
+      <LoanFeesManager
+        nominal={params.nominal}
+        fees={params.fees || []}
+        onChange={(updatedFees) => updateParam('fees', updatedFees)}
+      />
     </div>
   );
 };
