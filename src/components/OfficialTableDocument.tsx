@@ -27,6 +27,8 @@ import {
   Maximize2,
   Minimize2,
   Calendar,
+  Pencil,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface OfficialTableDocumentProps {
@@ -74,6 +76,14 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
   const [density, setDensity] = useState<TableDensity>('comfortable');
   const [isEditLocked, setIsEditLocked] = useState(false);
   const [customTitle, setCustomTitle] = useState('RINCIAN PEMBAYARAN CICILAN PINJAMAN');
+  const [labelLender, setLabelLender] = useState('LENDER');
+  const [labelIdentitas, setLabelIdentitas] = useState('IDENTITAS');
+  const [labelAlamat, setLabelAlamat] = useState('ALAMAT');
+  const [labelNominal, setLabelNominal] = useState('NOMINAL PINJAMAN');
+  const [labelBunga, setLabelBunga] = useState(`BUNGA ${params.annualRate}% /ANNUAL`);
+  const [labelTenor, setLabelTenor] = useState('JANGKA WAKTU/BULAN');
+  const [labelPembayaranDimulai, setLabelPembayaranDimulai] = useState('PEMBAYARAN DIMULAI');
+  const [labelCicilan, setLabelCicilan] = useState('CICILAN PER BULAN');
   const [hoveredRowNo, setHoveredRowNo] = useState<number | null>(null);
   const [selectedYearFilter, setSelectedYearFilter] = useState<'ALL' | number>('ALL');
 
@@ -224,16 +234,26 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
             <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold shadow-xs">
               <FileCheck2 className="w-5 h-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2.5">
                 <h3 className="font-extrabold text-slate-900 text-sm sm:text-base tracking-tight">
                   Dokumen Rincian Cicilan Pinjaman
                 </h3>
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
-                  {params.tenorMonths} Bulan
+              </div>
+              {/* Dot Badges Row matching UI reference */}
+              <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                {/* Tenor Dot Badge */}
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-orange-50/80 text-orange-900 border border-orange-200/70 shadow-2xs">
+                  <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0"></span>
+                  <span>{params.tenorMonths} Bulan</span>
+                </span>
+
+                {/* Method Dot Badge */}
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50/80 text-blue-900 border border-blue-200/70 shadow-2xs">
+                  <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0"></span>
+                  <span>Metode {params.method}</span>
                 </span>
               </div>
-              {/* Subtitle removed per request */}
             </div>
           </div>
 
@@ -266,61 +286,21 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
 
             <button
               type="button"
-              id="btn-export-csv"
-              onClick={() => exportToCSV(params, result)}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 transition-colors"
-            >
-              <FileText className="w-4 h-4 text-slate-500" />
-              <span>CSV</span>
-            </button>
-
-            <button
-              type="button"
-              id="btn-export-excel"
-              onClick={() => exportToExcel(params, result)}
-              className="inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-colors"
-            >
-              <FileSpreadsheet className="w-4 h-4" />
-              <span>Excel (.xlsx)</span>
-            </button>
-
-            <button
-              type="button"
               id="btn-print-doc"
               onClick={handlePrint}
               className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-sm transition-all hover:shadow hover:scale-[1.02] active:scale-[0.98]"
               title="Cetak atau Simpan sebagai PDF via dialog cetak browser (Format A4 Resmi)"
             >
               <Printer className="w-4 h-4 text-amber-300" />
-              <span>Cetak ke PDF</span>
+              <span>Print Pdf</span>
             </button>
           </div>
         </div>
 
-        {/* Bottom Line: UI Style Selector & Dynamic Customization Toggles */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
-          {/* UI Style Theme Chips */}
-          <div className="md:col-span-8 flex flex-wrap items-center gap-1.5">
-            {UI_STYLE_OPTIONS.map((style) => (
-              <button
-                key={style.id}
-                type="button"
-                onClick={() => setTableTheme(style.id)}
-                className={`text-xs px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 border ${
-                  tableTheme === style.id
-                    ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                    : 'bg-slate-50 text-slate-700 border-slate-200/80 hover:bg-slate-100'
-                }`}
-                title={style.desc}
-              >
-                <span className={`w-2.5 h-2.5 rounded-full ${style.previewBadge}`}></span>
-                <span>{style.label}</span>
-              </button>
-            ))}
-          </div>
-
+        {/* Customization & Column Controls */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Density & Column Controls */}
-          <div className="md:col-span-4 flex items-center justify-start md:justify-end gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Density Toggle */}
             <div className="inline-flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200/80">
               <button
@@ -384,56 +364,44 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
 
         {/* Dynamic Year/Period Filter (if tenor > 12 months) */}
         {availableYears.length > 1 && (
-          <div className="flex items-center gap-2 pt-2 border-t border-slate-100 text-xs">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
-            <span className="font-semibold text-slate-600">Filter Periode:</span>
-            <div className="flex flex-wrap items-center gap-1">
+          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 text-xs">
+            <span className="font-semibold text-slate-500 inline-flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-slate-400" />
+              <span>Filter Periode:</span>
+            </span>
+            <div className="flex flex-wrap items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => setSelectedYearFilter('ALL')}
-                className={`px-2.5 py-1 rounded-lg font-bold text-xs ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-semibold text-xs transition-all ${
                   selectedYearFilter === 'ALL'
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'bg-slate-100/90 text-slate-700 hover:bg-slate-200 border border-slate-200/60'
                 }`}
               >
-                Semua ({result.rows.length} Bln)
+                <span className={`w-1.5 h-1.5 rounded-full ${selectedYearFilter === 'ALL' ? 'bg-indigo-200' : 'bg-slate-400'}`}></span>
+                <span>Semua ({result.rows.length} Bln)</span>
               </button>
               {availableYears.map((yr) => (
                 <button
                   key={yr}
                   type="button"
                   onClick={() => setSelectedYearFilter(yr)}
-                  className={`px-2.5 py-1 rounded-lg font-bold text-xs ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-semibold text-xs transition-all ${
                     selectedYearFilter === yr
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'bg-slate-100/90 text-slate-700 hover:bg-slate-200 border border-slate-200/60'
                   }`}
                 >
-                  Tahun {yr}
+                  <span className={`w-1.5 h-1.5 rounded-full ${selectedYearFilter === yr ? 'bg-indigo-200' : 'bg-blue-500'}`}></span>
+                  <span>Tahun {yr}</span>
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* Mode Edit Notice Bar */}
-        {!isEditLocked && (
-          <div className="flex items-center justify-between text-xs bg-amber-50/70 border border-amber-200/80 px-3.5 py-2 rounded-2xl text-amber-900">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
-              <span className="font-bold">
-                Edit Table
-              </span>
-            </div>
-            <button
-              onClick={() => setIsEditLocked(true)}
-              className="text-[11px] font-bold underline hover:text-amber-950 shrink-0 ml-2"
-            >
-              Kunci Tampilan
-            </button>
-          </div>
-        )}
+
       </div>
 
       {/* The Bento Container framing the official document sheet */}
@@ -462,7 +430,14 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
               {/* Row 1: Lender & Identitas */}
               <div className={`grid grid-cols-1 divide-y sm:divide-y-0 sm:grid-cols-2 ${themeClasses.metaDivider}`}>
                 <div className={`p-2 sm:p-2.5 flex items-center ${themeClasses.metaBorderR}`}>
-                  <span className="w-28 sm:w-32 uppercase shrink-0">LENDER</span>
+                  <input
+                    type="text"
+                    disabled={isEditLocked}
+                    value={labelLender}
+                    onChange={(e) => setLabelLender(e.target.value)}
+                    className="w-28 sm:w-32 uppercase shrink-0 font-bold bg-transparent focus:outline-none focus:bg-amber-100/70 rounded px-1 -mx-1 text-slate-900 disabled:cursor-default"
+                    title={!isEditLocked ? 'Klik untuk mengedit label LENDER' : undefined}
+                  />
                   <span className="mr-2">:</span>
                   <input
                     type="text"
@@ -475,7 +450,14 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
                   />
                 </div>
                 <div className="p-2 sm:p-2.5 flex items-center">
-                  <span className="w-28 sm:w-32 uppercase shrink-0">IDENTITAS</span>
+                  <input
+                    type="text"
+                    disabled={isEditLocked}
+                    value={labelIdentitas}
+                    onChange={(e) => setLabelIdentitas(e.target.value)}
+                    className="w-28 sm:w-32 uppercase shrink-0 font-bold bg-transparent focus:outline-none focus:bg-amber-100/70 rounded px-1 -mx-1 text-slate-900 disabled:cursor-default"
+                    title={!isEditLocked ? 'Klik untuk mengedit label IDENTITAS' : undefined}
+                  />
                   <span className="mr-2">:</span>
                   <input
                     type="text"
@@ -491,7 +473,14 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
 
               {/* Row 2: Alamat */}
               <div className="p-2 sm:p-2.5 flex items-center">
-                <span className="w-28 sm:w-32 uppercase shrink-0">ALAMAT</span>
+                <input
+                  type="text"
+                  disabled={isEditLocked}
+                  value={labelAlamat}
+                  onChange={(e) => setLabelAlamat(e.target.value)}
+                  className="w-28 sm:w-32 uppercase shrink-0 font-bold bg-transparent focus:outline-none focus:bg-amber-100/70 rounded px-1 -mx-1 text-slate-900 disabled:cursor-default"
+                  title={!isEditLocked ? 'Klik untuk mengedit label ALAMAT' : undefined}
+                />
                 <span className="mr-2">:</span>
                 <input
                   type="text"
@@ -507,7 +496,14 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
               {/* Row 3: Nominal, Bunga, Tenor */}
               <div className="p-2 sm:p-2.5 space-y-1 bg-slate-50/50">
                 <div className="flex items-center">
-                  <span className="w-44 sm:w-52 uppercase shrink-0">NOMINAL PINJAMAN</span>
+                  <input
+                    type="text"
+                    disabled={isEditLocked}
+                    value={labelNominal}
+                    onChange={(e) => setLabelNominal(e.target.value)}
+                    className="w-44 sm:w-52 uppercase shrink-0 font-bold bg-transparent focus:outline-none focus:bg-amber-100/70 rounded px-1 -mx-1 text-slate-900 disabled:cursor-default"
+                    title={!isEditLocked ? 'Klik untuk mengedit label NOMINAL PINJAMAN' : undefined}
+                  />
                   <span className="mr-2">:</span>
                   <span className="font-extrabold text-sm sm:text-base text-slate-950">
                     {formatNumberIndo(params.nominal)}
@@ -515,9 +511,14 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
                 </div>
 
                 <div className="flex items-center">
-                  <span className="w-44 sm:w-52 uppercase shrink-0">
-                    BUNGA {params.annualRate}% /ANNUAL
-                  </span>
+                  <input
+                    type="text"
+                    disabled={isEditLocked}
+                    value={labelBunga}
+                    onChange={(e) => setLabelBunga(e.target.value)}
+                    className="w-44 sm:w-52 uppercase shrink-0 font-bold bg-transparent focus:outline-none focus:bg-amber-100/70 rounded px-1 -mx-1 text-slate-900 disabled:cursor-default"
+                    title={!isEditLocked ? 'Klik untuk mengedit label BUNGA' : undefined}
+                  />
                   <span className="mr-2">:</span>
                   <span className="text-slate-700 font-semibold">
                     {formatPercent(result.monthlyRate, 3)} / bln
@@ -525,7 +526,14 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
                 </div>
 
                 <div className="flex items-center">
-                  <span className="w-44 sm:w-52 uppercase shrink-0">JANGKA WAKTU/BULAN</span>
+                  <input
+                    type="text"
+                    disabled={isEditLocked}
+                    value={labelTenor}
+                    onChange={(e) => setLabelTenor(e.target.value)}
+                    className="w-44 sm:w-52 uppercase shrink-0 font-bold bg-transparent focus:outline-none focus:bg-amber-100/70 rounded px-1 -mx-1 text-slate-900 disabled:cursor-default"
+                    title={!isEditLocked ? 'Klik untuk mengedit label JANGKA WAKTU/BULAN' : undefined}
+                  />
                   <span className="mr-2">:</span>
                   <span className="font-extrabold">{params.tenorMonths} Bulan</span>
                 </div>
@@ -533,7 +541,14 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
 
               {/* Row 4: Pembayaran Dimulai */}
               <div className="p-2 sm:p-2.5 flex items-center bg-white">
-                <span className="w-44 sm:w-52 uppercase shrink-0 font-extrabold">PEMBAYARAN DIMULAI</span>
+                <input
+                  type="text"
+                  disabled={isEditLocked}
+                  value={labelPembayaranDimulai}
+                  onChange={(e) => setLabelPembayaranDimulai(e.target.value)}
+                  className="w-44 sm:w-52 uppercase shrink-0 font-extrabold bg-transparent focus:outline-none focus:bg-amber-100/70 rounded px-1 -mx-1 text-slate-900 disabled:cursor-default"
+                  title={!isEditLocked ? 'Klik untuk mengedit label PEMBAYARAN DIMULAI' : undefined}
+                />
                 <span className="mr-2 font-extrabold">:</span>
                 <input
                   type="text"
@@ -552,7 +567,14 @@ export const OfficialTableDocument: React.FC<OfficialTableDocumentProps> = ({
               {/* Row 5: Cicilan Per Bulan */}
               <div className={`grid grid-cols-1 sm:grid-cols-2 ${themeClasses.metaDivider} bg-white`}>
                 <div className={`p-2 sm:p-2.5 flex items-center ${themeClasses.metaBorderR} font-extrabold uppercase text-xs sm:text-sm`}>
-                  CICILAN PER BULAN
+                  <input
+                    type="text"
+                    disabled={isEditLocked}
+                    value={labelCicilan}
+                    onChange={(e) => setLabelCicilan(e.target.value)}
+                    className="font-extrabold uppercase text-xs sm:text-sm bg-transparent focus:outline-none focus:bg-amber-100/70 rounded px-1 -mx-1 text-slate-900 disabled:cursor-default w-full"
+                    title={!isEditLocked ? 'Klik untuk mengedit label CICILAN PER BULAN' : undefined}
+                  />
                 </div>
                 <div className={`p-2 sm:p-2.5 flex items-center justify-start sm:justify-end text-sm sm:text-base ${themeClasses.installmentAmount}`}>
                   {params.method === 'FLAT' || params.method === 'ANUITAS'

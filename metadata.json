@@ -1,6 +1,6 @@
 {
   "name": "Tabel Perhitungan Bunga Pinjaman",
-  "description": "Aplikasi kalkulator dan simulasi tabel rincian pembayaran cicilan pinjaman (Flat, Efektif, Anuitas) dengan format cetak resmi dan ekspor data.",
+  "description": "Sistem manajemen pinjaman koperasi lengkap dengan kalkulator simulasi bunga (Flat, Efektif, Anuitas), pencatatan data anggota, pencatatan pinjaman anggota, flowchart kerjasama PMK, dan dokumen cetak resmi.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

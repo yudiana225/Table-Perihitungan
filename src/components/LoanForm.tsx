@@ -34,6 +34,7 @@ const TENOR_PRESETS = [6, 12, 18, 24, 36, 48, 60];
 
 export const LoanForm: React.FC<LoanFormProps> = ({ params, onChange, onReset }) => {
   const [showPartyDetails, setShowPartyDetails] = useState(false);
+  const [rateInputMode, setRateInputMode] = useState<'YEAR' | 'MONTH'>('YEAR');
 
   const updateParam = <K extends keyof LoanParams>(key: K, value: LoanParams[K]) => {
     onChange({
@@ -43,6 +44,15 @@ export const LoanForm: React.FC<LoanFormProps> = ({ params, onChange, onReset })
   };
 
   const monthlyRate = params.annualRate / 12;
+
+  // Derive the displayed rate value based on the selected mode
+  const displayedRate = rateInputMode === 'YEAR' ? params.annualRate : Number(monthlyRate.toFixed(4));
+
+  const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Math.max(0, Number(e.target.value));
+    const newAnnualRate = rateInputMode === 'YEAR' ? value : value * 12;
+    updateParam('annualRate', newAnnualRate);
+  };
 
   return (
     <div id="loan-form-container" className="space-y-4">
@@ -124,11 +134,21 @@ export const LoanForm: React.FC<LoanFormProps> = ({ params, onChange, onReset })
               {/* Suku Bunga */}
               <div className="group">
                 <div className="flex items-center justify-between mb-1">
-                  <label htmlFor="input-bunga" className="text-xs font-semibold text-indigo-200 uppercase tracking-wider block">
-                    Bunga (% / Thn)
-                  </label>
-                  <span className="text-[11px] text-indigo-200">
-                    ~{monthlyRate.toFixed(2)}%/bln
+                  <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider">
+                    <span className="text-indigo-200">Bunga</span>
+                    <button
+                      type="button"
+                      onClick={() => setRateInputMode(m => m === 'YEAR' ? 'MONTH' : 'YEAR')}
+                      className="px-1.5 py-0.5 rounded-md bg-indigo-500/30 text-white hover:bg-indigo-500/50 transition-colors ml-1"
+                      title="Klik untuk mengubah mode input bunga (Tahun/Bulan)"
+                    >
+                      (% / {rateInputMode === 'YEAR' ? 'THN' : 'BLN'})
+                    </button>
+                  </div>
+                  <span className="text-[11px] text-indigo-300">
+                    {rateInputMode === 'YEAR' 
+                      ? `~${monthlyRate.toFixed(2)}%/bln` 
+                      : `~${params.annualRate.toFixed(2)}%/thn`}
                   </span>
                 </div>
                 <div className="border-b border-indigo-400 focus-within:border-white transition-colors pb-1 flex items-baseline">
@@ -138,8 +158,8 @@ export const LoanForm: React.FC<LoanFormProps> = ({ params, onChange, onReset })
                     min="0"
                     max="100"
                     step="0.1"
-                    value={params.annualRate || ''}
-                    onChange={(e) => updateParam('annualRate', Math.max(0, Number(e.target.value)))}
+                    value={displayedRate || ''}
+                    onChange={handleRateChange}
                     className="bg-transparent text-2xl font-extrabold text-white w-full focus:outline-none placeholder-indigo-300/50"
                     placeholder="14"
                   />
