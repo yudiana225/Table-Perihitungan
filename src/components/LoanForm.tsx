@@ -57,9 +57,9 @@ export const LoanForm: React.FC<LoanFormProps> = ({ params, onChange, onReset })
   return (
     <div id="loan-form-container" className="space-y-4">
       {/* Bento Main Control Card (Deep Indigo Hero) */}
-      <div className="bg-indigo-600 rounded-3xl p-6 shadow-xl text-white flex flex-col justify-between relative overflow-hidden">
+      <div className="bg-[#4318FF] rounded-3xl p-6 shadow-md text-white flex flex-col justify-between relative overflow-hidden transition-colors duration-300">
         {/* Background ambient pattern */}
-        <div className="absolute -top-12 -right-12 w-40 h-40 bg-indigo-500/30 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
 
         <div>
           {/* Header */}
@@ -69,7 +69,7 @@ export const LoanForm: React.FC<LoanFormProps> = ({ params, onChange, onReset })
                 <Sliders className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-xl font-bold tracking-tight text-white">Parameter Pinjaman</h2>
+                <h2 className="text-xl font-bold tracking-tight text-white">Simulasi Rate</h2>
                 <p className="text-xs text-indigo-200">Atur nominal, bunga & jangka waktu</p>
               </div>
             </div>

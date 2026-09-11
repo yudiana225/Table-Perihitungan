@@ -491,7 +491,7 @@ export const MemberLoanManager: React.FC<MemberLoanManagerProps> = ({
                 </div>
               </div>
 
-              {/* Financial Parameters */}
+              {/* Simulasi Keuangan */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">

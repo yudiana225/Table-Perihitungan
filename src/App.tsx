@@ -22,6 +22,15 @@ import {
   ShieldCheck,
   Percent,
   Clock,
+  Search,
+  Bell,
+  Info,
+  Moon,
+  Sun,
+  Plus,
+  Lock,
+  MinusSquare,
+  LayoutDashboard
 } from 'lucide-react';
 
 const INITIAL_MEMBERS: MemberRecord[] = [
@@ -179,6 +188,17 @@ export default function App() {
     'CALCULATOR' | 'MEMBERS' | 'LOANS' | 'FLOWCHART' | 'INTEREST_CALC' | 'ALL'
   >('CALCULATOR');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarPinned, setIsSidebarPinned] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Toggle dark mode class on document element
+  React.useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
 
   // Persistence for Members and Member Loans
   const [members, setMembers] = useState<MemberRecord[]>(INITIAL_MEMBERS);
@@ -343,7 +363,7 @@ export default function App() {
   const getPageTitle = () => {
     switch (activeTab) {
       case 'CALCULATOR':
-        return 'Simulasi Bunga & Dokumen Cetak Resmi';
+        return 'CopyRight 2026 @Yudiana';
       case 'MEMBERS':
         return 'Pencatatan Data Anggota Koperasi';
       case 'LOANS':
@@ -359,58 +379,57 @@ export default function App() {
     }
   };
 
+  const sidebarOpacityClass = isSidebarPinned ? 'opacity-100' : 'lg:opacity-0 lg:group-hover/sidebar:opacity-100';
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex font-sans antialiased">
+    <div className="min-h-screen bg-[#F4F7FE] dark:bg-[#0B1437] transition-colors duration-300 text-slate-900 dark:text-white flex font-sans antialiased">
       {/* Mobile Sidebar Overlay Backdrop */}
       {isSidebarOpen && (
         <div
           onClick={() => setIsSidebarOpen(false)}
-          className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs z-40 lg:hidden no-print"
+          className="fixed inset-0 bg-[#0B1437]/50 backdrop-blur-xs z-40 lg:hidden no-print"
         />
       )}
 
       {/* Modern Fixed/Sticky Sidebar Navigation */}
       <aside
-        className={`group/sidebar no-print fixed lg:sticky top-0 left-0 h-screen bg-white border-r border-slate-200/80 z-50 flex flex-col justify-between transition-all duration-300 ease-in-out shrink-0 overflow-hidden ${
+        className={`group/sidebar no-print fixed lg:sticky top-0 left-0 h-screen bg-[#101828] border-none z-50 flex flex-col justify-between transition-all duration-300 ease-in-out shrink-0 overflow-hidden shadow-sm ${
           isSidebarOpen
-            ? 'translate-x-0 w-72'
-            : '-translate-x-full lg:translate-x-0 lg:w-[88px] lg:hover:w-72'
+            ? 'translate-x-0 w-[280px]'
+            : `-translate-x-full lg:translate-x-0 ${isSidebarPinned ? 'lg:w-[280px]' : 'lg:w-[80px] lg:hover:w-[280px]'}`
         }`}
       >
         {/* Sidebar Header Brand */}
-        <div>
-          <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white font-black text-xl shadow-md shadow-indigo-200 shrink-0">
-                <Percent className="w-5 h-5" />
-              </div>
-              <div className="min-w-0 transition-opacity duration-300 lg:opacity-0 lg:group-hover/sidebar:opacity-100">
-                <h1 className="font-extrabold text-slate-900 text-sm tracking-tight leading-tight truncate w-40">
-                  Koperasi Simpan Pinjam
+        <div className="flex flex-col h-full">
+          <div className="p-5 flex items-center justify-between">
+            <div className="flex items-center gap-3 lg:pl-1">
+              <div className="w-3 h-3 rounded-full bg-white shrink-0 shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
+              <div className={`min-w-0 transition-opacity duration-300 ${sidebarOpacityClass}`}>
+                <h1 className="font-semibold text-white text-base tracking-tight truncate w-40">
+                  Dashbord Finance
                 </h1>
-                <p className="text-[11px] font-semibold text-indigo-600 mt-0.5 flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3 text-indigo-600 inline" />
-                  <span>Sistem PMK & Pinjaman</span>
-                </p>
               </div>
             </div>
 
             <button
               type="button"
-              onClick={() => setIsSidebarOpen(false)}
-              className="lg:hidden p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 shrink-0"
+              onClick={() => {
+                if (window.innerWidth < 1024) {
+                  setIsSidebarOpen(false);
+                } else {
+                  setIsSidebarPinned(!isSidebarPinned);
+                }
+              }}
+              className={`p-1 rounded-md transition-colors shrink-0 ${isSidebarPinned ? 'text-white bg-[#1D2939]' : 'text-[#98A2B3] hover:text-white hover:bg-[#1D2939]'}`}
+              title="Toggle sidebar pin"
             >
-              <X className="w-5 h-5" />
+              <Lock className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Navigation Menu Links */}
-          <div className="p-3.5 space-y-1.5">
-            <div className="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 transition-opacity duration-300 lg:opacity-0 lg:group-hover/sidebar:opacity-100 whitespace-nowrap">
-              Menu Utama
-            </div>
-
-            {navMenuItems.map((item) => {
+          {/* Navigation Menu Links (Top Section) */}
+          <div className="px-3 pt-4 pb-2 space-y-1">
+            {navMenuItems.slice(0, 3).map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
 
@@ -423,67 +442,104 @@ export default function App() {
                     setIsSidebarOpen(false);
                   }}
                   title={item.label}
-                  className={`w-full flex items-center justify-between p-3 rounded-2xl text-left transition-all group/item ${
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-md text-left transition-colors duration-200 group/item relative ${
                     isActive
-                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-                      : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-950'
+                      ? 'bg-[#1D2939] text-white'
+                      : 'text-[#CECFD2] hover:bg-[#1D2939] hover:text-white'
                   }`}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                        isActive
-                          ? 'bg-white/20 text-white'
-                          : 'bg-slate-100 text-indigo-600 group-hover/item:bg-white group-hover/item:shadow-xs'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0 transition-opacity duration-300 lg:opacity-0 lg:group-hover/sidebar:opacity-100">
-                      <div className="font-bold text-xs truncate w-32">{item.label}</div>
-                      <div
-                        className={`text-[10px] truncate w-32 ${
-                          isActive ? 'text-indigo-100' : 'text-slate-400'
-                        }`}
-                      >
-                        {item.description}
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <Icon className="w-5 h-5 shrink-0" strokeWidth={1.5} />
+                    <div className={`min-w-0 transition-opacity duration-300 ${sidebarOpacityClass}`}>
+                      <div className="font-medium text-sm truncate w-32">
+                        {item.label}
                       </div>
                     </div>
                   </div>
-
-                  <span
-                    className={`ml-2 text-[10px] font-extrabold px-2 py-0.5 rounded-full border shrink-0 transition-opacity duration-300 lg:opacity-0 lg:group-hover/sidebar:opacity-100 ${
-                      isActive
-                        ? 'bg-white/20 text-white border-white/30'
-                        : item.badgeColor
-                    }`}
-                  >
-                    {item.badge}
-                  </span>
+                  
+                  {item.badge && (
+                    <span className={`transition-opacity duration-300 ${sidebarOpacityClass} bg-[#344054] text-[#EAECF0] text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0`}>
+                      {item.badge}
+                    </span>
+                  )}
                 </button>
               );
             })}
           </div>
-        </div>
 
-        {/* Sidebar Footer Info Card */}
-        <div className="p-4 border-t border-slate-100 space-y-3">
-          <div className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-50/80 to-purple-50/60 border border-indigo-100/70 transition-opacity duration-300 lg:opacity-0 lg:group-hover/sidebar:opacity-100">
-            <div className="flex items-center gap-2 text-indigo-950 font-extrabold text-xs whitespace-nowrap">
-              <Building2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-              <span className="truncate w-40">Koperasi Konsumen Karyawan</span>
+          {/* Navigation Menu Links (Secondary/Projects Section) */}
+          <div className={`px-3 pt-6 pb-2 space-y-1 transition-opacity duration-300 ${sidebarOpacityClass}`}>
+            <div className="flex items-center justify-between px-3 mb-3">
+              <span className="text-xs font-semibold text-[#98A2B3]">Projects</span>
+              <button className="text-[#98A2B3] hover:text-white transition-colors">
+                <Plus className="w-4 h-4" />
+              </button>
             </div>
-            <p className="text-[10px] text-slate-500 mt-1 leading-relaxed w-40">
-              PT. Transportasi Jakarta &bull; Mitra Pendanaan Modal Kerja PMK
-            </p>
+            
+            {navMenuItems.slice(3).map((item, idx) => {
+              const isActive = activeTab === item.id;
+              const dotColors = ['bg-[#9E77ED]', 'bg-[#1570EF]', 'bg-[#12B76A]', 'bg-[#F04438]', 'bg-white'];
+              const dotColor = dotColors[idx % dotColors.length];
+
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setIsSidebarOpen(false);
+                  }}
+                  title={item.label}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-md text-left transition-colors duration-200 group/item relative ${
+                    isActive
+                      ? 'bg-[#1D2939] text-white'
+                      : 'text-[#CECFD2] hover:bg-[#1D2939] hover:text-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                      <div className={`w-2 h-2 rounded-full ${dotColor}`} />
+                    </div>
+                    <div className={`min-w-0 transition-opacity duration-300 ${sidebarOpacityClass}`}>
+                      <div className="font-medium text-sm truncate w-32">
+                        {item.label}
+                      </div>
+                    </div>
+                  </div>
+
+                  {isActive && (
+                    <ChevronRight className={`w-4 h-4 text-[#98A2B3] transition-opacity duration-300 ${sidebarOpacityClass}`} />
+                  )}
+                </button>
+              );
+            })}
           </div>
 
-          <div className="flex items-center justify-between text-[11px] text-slate-400 px-1 font-medium transition-opacity duration-300 lg:opacity-0 lg:group-hover/sidebar:opacity-100 whitespace-nowrap">
-            <span>Versi Aplikasi 2.4</span>
-            <span className="inline-flex items-center gap-1 text-emerald-600 font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              Aktif
-            </span>
+          {/* Spacer to push footer to bottom */}
+          <div className="flex-1"></div>
+
+          {/* Theme Toggle Footer */}
+          <div className={`p-4 transition-opacity duration-300 ${sidebarOpacityClass}`}>
+            <div className="flex items-center bg-[#0C111D] p-1 rounded-lg border border-[#1D2939]">
+              <button
+                onClick={() => setIsDarkMode(false)}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-semibold transition-colors ${
+                  !isDarkMode ? 'bg-[#1D2939] text-white shadow-sm' : 'text-[#98A2B3] hover:text-white'
+                }`}
+              >
+                <Sun className="w-4 h-4" />
+                Light
+              </button>
+              <button
+                onClick={() => setIsDarkMode(true)}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-semibold transition-colors ${
+                  isDarkMode ? 'bg-[#1D2939] text-white shadow-sm' : 'text-[#98A2B3] hover:text-white'
+                }`}
+              >
+                <Moon className="w-4 h-4" />
+                Dark
+              </button>
+            </div>
           </div>
         </div>
       </aside>
@@ -491,42 +547,60 @@ export default function App() {
       {/* Main Content Area Container */}
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Top Navbar Header */}
-        <header className="no-print bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30">
-          <div className="px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 min-w-0">
-              {/* Mobile Hamburger Button */}
+        <header className="no-print sticky top-0 z-30 pt-6 px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col min-w-0">
+              <div className="text-[#A3AED0] text-sm font-medium mb-1 transition-colors duration-300">
+                Pages / {navMenuItems.find((n) => n.id === activeTab)?.label}
+              </div>
+              <h2 className="font-bold text-[#2B3674] dark:text-white text-3xl tracking-tight truncate transition-colors duration-300">
+                {getPageTitle()}
+              </h2>
+            </div>
+
+            {/* Right Action Bar (Search & Profile) */}
+            <div className="flex items-center gap-4 bg-white dark:bg-[#111C44] rounded-full p-2.5 shadow-sm border border-slate-100 dark:border-slate-800 transition-colors duration-300">
+              {/* Search Bar */}
+              <div className="flex items-center bg-[#F4F7FE] dark:bg-[#0B1437] rounded-full px-4 py-2 w-full sm:w-56 transition-colors duration-300">
+                <Search className="w-4 h-4 text-[#2B3674] dark:text-white transition-colors duration-300" />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className="bg-transparent border-none outline-none text-sm ml-2 w-full text-[#2B3674] dark:text-white placeholder-[#8F9BBA] dark:placeholder-slate-400"
+                />
+              </div>
+
+              {/* Action Icons */}
+              <button className="text-[#A3AED0] hover:text-[#2B3674] dark:hover:text-white transition-colors">
+                <Bell className="w-5 h-5" />
+              </button>
+              
+              <button className="text-[#A3AED0] hover:text-[#2B3674] dark:hover:text-white transition-colors">
+                <Info className="w-5 h-5" />
+              </button>
+              
+              <button 
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className="text-[#A3AED0] hover:text-[#2B3674] dark:hover:text-white transition-colors"
+                title="Toggle Dark Mode"
+              >
+                <Moon className="w-5 h-5" />
+              </button>
+
+              {/* Profile Avatar */}
+              <div className="w-10 h-10 rounded-full bg-[#11047A] flex items-center justify-center text-white font-bold text-sm ml-1 cursor-pointer overflow-hidden border-2 border-white dark:border-[#111C44] shadow-sm transition-colors duration-300">
+                <img src="https://ui-avatars.com/api/?name=Alex+Sterling&background=random" alt="Profile" className="w-full h-full object-cover" />
+              </div>
+
+              {/* Mobile Sidebar Toggle (only visible on small screens inside this block) */}
               <button
                 type="button"
                 onClick={() => setIsSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-950 hover:bg-slate-100"
+                className="lg:hidden p-2 rounded-full text-[#A3AED0] hover:text-[#2B3674] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-300"
                 title="Buka Menu Sidebar"
               >
                 <Menu className="w-5 h-5" />
               </button>
-
-              <div className="min-w-0">
-                <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                  <span>Modul</span>
-                  <ChevronRight className="w-3 h-3 text-slate-300" />
-                  <span className="text-indigo-600 font-bold">
-                    {navMenuItems.find((n) => n.id === activeTab)?.label}
-                  </span>
-                </div>
-                <h2 className="font-extrabold text-slate-900 text-sm sm:text-base tracking-tight truncate">
-                  {getPageTitle()}
-                </h2>
-              </div>
-            </div>
-
-            {/* Quick Status / Header Stats */}
-            <div className="flex items-center gap-2 shrink-0">
-              <div className="hidden sm:flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-xs">
-                <span className="text-slate-400">Total Anggota:</span>
-                <span className="font-extrabold text-slate-900">{members.length}</span>
-                <span className="text-slate-300">&bull;</span>
-                <span className="text-slate-400">Pinjaman:</span>
-                <span className="font-extrabold text-indigo-600">{memberLoans.length}</span>
-              </div>
             </div>
           </div>
         </header>
@@ -577,7 +651,7 @@ export default function App() {
           {/* Module 4: Calculator & Official Document Table View */}
           {(activeTab === 'CALCULATOR' || activeTab === 'ALL') && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              {/* Left Column: Interactive Parameters Bento Form (Col span 4) */}
+              {/* Left Column: Interactive Simulation Bento Form (Col span 4) */}
               <div className="no-print lg:col-span-4 space-y-6">
                 <LoanForm params={params} onChange={setParams} onReset={handleReset} />
               </div>

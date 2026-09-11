@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   body {
@@ -119,3 +120,12 @@
   }
 }
 
+
+@keyframes bg-shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+.animate-bg-shimmer {
+  animation: bg-shimmer 2s linear infinite;
+  background-size: 200% auto;
+}

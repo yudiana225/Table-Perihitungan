@@ -21,97 +21,97 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ params, result }
       {/* Bento Grid: Quick Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Cicilan Per Bulan */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group">
+        <div className="bg-white dark:bg-[#111C44] rounded-3xl p-5 border border-slate-200/80 dark:border-none shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 shrink-0">
+            <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
               <CreditCard className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Cicilan Per Bulan</p>
-              <p className="text-xl font-extrabold text-slate-900 tracking-tight">
+              <p className="text-[11px] text-[#A3AED0] font-bold uppercase tracking-wider">Cicilan Per Bulan</p>
+              <p className="text-xl font-extrabold text-[#2B3674] dark:text-white tracking-tight transition-colors duration-300">
                 {params.method === 'FLAT' || params.method === 'ANUITAS'
                   ? formatRupiah(result.monthlyInstallment)
                   : `${formatRupiah(result.firstMonthInstallment)}`}
               </p>
             </div>
           </div>
-          <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-            <span>Metode: <strong className="text-slate-800">{params.method}</strong></span>
-            <span className="text-emerald-700 font-semibold">{params.tenorMonths}x</span>
+          <div className="flex items-center justify-between text-xs text-[#A3AED0] pt-2 border-t border-slate-100 dark:border-slate-800 transition-colors duration-300">
+            <span>Metode: <strong className="text-[#2B3674] dark:text-white transition-colors duration-300">{params.method}</strong></span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{params.tenorMonths}x</span>
           </div>
         </div>
 
         {/* Card 2: Total Bunga */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group">
+        <div className="bg-white dark:bg-[#111C44] rounded-3xl p-5 border border-slate-200/80 dark:border-none shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600 shrink-0">
+            <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
               <TrendingUp className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Total Bunga ({params.annualRate}%)</p>
-              <p className="text-xl font-extrabold text-amber-700 tracking-tight">
+              <p className="text-[11px] text-[#A3AED0] font-bold uppercase tracking-wider">Total Bunga ({params.annualRate}%)</p>
+              <p className="text-xl font-extrabold text-amber-600 dark:text-amber-400 tracking-tight transition-colors duration-300">
                 {formatRupiah(result.totalInterest)}
               </p>
             </div>
           </div>
-          <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-            <span>Porsi: <strong className="text-amber-800">{formatPercent(interestRatio, 1)}</strong></span>
-            <span className="text-slate-600 font-mono">{(params.annualRate / 12).toFixed(2)}%/bln</span>
+          <div className="flex items-center justify-between text-xs text-[#A3AED0] pt-2 border-t border-slate-100 dark:border-slate-800 transition-colors duration-300">
+            <span>Porsi: <strong className="text-amber-600 dark:text-amber-400">{formatPercent(interestRatio, 1)}</strong></span>
+            <span className="text-[#A3AED0] font-mono">{(params.annualRate / 12).toFixed(2)}%/bln</span>
           </div>
         </div>
 
         {/* Card 3: Pencairan Bersih Diterima */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group">
+        <div className="bg-white dark:bg-[#111C44] rounded-3xl p-5 border border-slate-200/80 dark:border-none shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-teal-100 rounded-2xl flex items-center justify-center text-teal-600 shrink-0">
+            <div className="w-10 h-10 bg-teal-100 dark:bg-teal-900/30 rounded-2xl flex items-center justify-center text-teal-600 dark:text-teal-400 shrink-0">
               <Wallet className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Pencairan Bersih</p>
-              <p className="text-xl font-extrabold text-teal-700 tracking-tight">
+              <p className="text-[11px] text-[#A3AED0] font-bold uppercase tracking-wider">Pencairan Bersih</p>
+              <p className="text-xl font-extrabold text-teal-600 dark:text-teal-400 tracking-tight transition-colors duration-300">
                 {formatRupiah(result.netDisbursement)}
               </p>
             </div>
           </div>
-          <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+          <div className="flex items-center justify-between text-xs text-[#A3AED0] pt-2 border-t border-slate-100 dark:border-slate-800 transition-colors duration-300">
             <span>Potongan Biaya:</span>
-            <span className="text-rose-600 font-bold">{formatRupiah(result.totalFees)}</span>
+            <span className="text-rose-500 font-bold">{formatRupiah(result.totalFees)}</span>
           </div>
         </div>
 
         {/* Card 4: Total Pengembalian */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between">
+        <div className="bg-white dark:bg-[#111C44] rounded-3xl p-5 border border-slate-200/80 dark:border-none shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600 shrink-0">
+            <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Total Pembayaran</p>
-              <p className="text-xl font-extrabold text-slate-900 tracking-tight">
+              <p className="text-[11px] text-[#A3AED0] font-bold uppercase tracking-wider">Total Pembayaran</p>
+              <p className="text-xl font-extrabold text-[#2B3674] dark:text-white tracking-tight transition-colors duration-300">
                 {formatRupiah(result.totalPayment)}
               </p>
             </div>
           </div>
-          <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+          <div className="flex items-center justify-between text-xs text-[#A3AED0] pt-2 border-t border-slate-100 dark:border-slate-800 transition-colors duration-300">
             <span>Pokok + Bunga</span>
-            <span className="text-indigo-600 font-bold">{params.tenorMonths} Bln Lunas</span>
+            <span className="text-indigo-500 dark:text-indigo-400 font-bold">{params.tenorMonths} Bln Lunas</span>
           </div>
         </div>
       </div>
 
       {/* Bento Grid: Visual Composition & Financial Breakdown Card */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-5">
+      <div className="bg-white dark:bg-[#111C44] rounded-3xl p-6 border border-slate-200/80 dark:border-none shadow-sm space-y-5 transition-colors duration-300">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Komposisi Pembayaran</h3>
-            <p className="text-sm font-bold text-slate-800 mt-0.5">Perbandingan Porsi Pokok & Bunga Pinjaman</p>
+            <h3 className="text-xs font-bold text-[#A3AED0] uppercase tracking-widest">Komposisi Pembayaran</h3>
+            <p className="text-sm font-bold text-[#2B3674] dark:text-white mt-0.5 transition-colors duration-300">Perbandingan Porsi Pokok & Bunga Pinjaman</p>
           </div>
         </div>
 
         {/* Visual Mini Bars (Bento Style) */}
         {sampleRows.length > 0 && (
           <div className="space-y-2">
-            <div className="flex items-end justify-between gap-2 h-24 pt-4 px-2 bg-slate-50/70 rounded-2xl border border-slate-100">
+            <div className="flex items-end justify-between gap-2 h-24 pt-4 px-2 bg-slate-50/70 dark:bg-[#0B1437]/50 rounded-2xl border border-slate-100 dark:border-slate-800 transition-colors duration-300">
               {sampleRows.map((r) => {
                 const maxTotal = Math.max(...sampleRows.map((x) => x.total));
                 const principalHeight = (r.principal / maxTotal) * 100;
@@ -121,17 +121,17 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ params, result }
                   <div key={r.no} className="flex-1 flex flex-col items-center gap-1 h-full justify-end group relative">
                     <div className="w-full max-w-[36px] flex items-end gap-0.5 h-full">
                       <div
-                        className="flex-1 bg-indigo-600 rounded-t-md transition-all duration-300 group-hover:bg-indigo-700"
+                        className="flex-1 bg-[#4318FF] rounded-t-md transition-all duration-300 group-hover:bg-indigo-700"
                         style={{ height: `${principalHeight}%` }}
                         title={`Pokok: ${formatRupiah(r.principal)}`}
                       />
                       <div
-                        className="flex-1 bg-amber-400 rounded-t-md transition-all duration-300 group-hover:bg-amber-500"
+                        className="flex-1 bg-[#FFB547] rounded-t-md transition-all duration-300 group-hover:bg-amber-500"
                         style={{ height: `${interestHeight}%` }}
                         title={`Bunga: ${formatRupiah(r.interest)}`}
                       />
                     </div>
-                    <span className="text-[10px] font-bold text-slate-400">Bln {r.no}</span>
+                    <span className="text-[10px] font-bold text-[#A3AED0]">Bln {r.no}</span>
                   </div>
                 );
               })}

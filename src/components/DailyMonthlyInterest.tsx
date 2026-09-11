@@ -59,7 +59,7 @@ export const DailyMonthlyInterest: React.FC = () => {
           <div className="space-y-4 p-5 rounded-2xl bg-slate-50/80 border border-slate-100">
             <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-indigo-600" />
-              Parameter Dasar
+              Simulasi Dasar
             </h3>
             
             <div>
