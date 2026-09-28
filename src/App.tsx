@@ -554,28 +554,29 @@ export default function App() {
                 Pages / {navMenuItems.find((n) => n.id === activeTab)?.label}
               </div>
               <h2 className="font-bold text-[#2B3674] dark:text-white text-3xl tracking-tight truncate transition-colors duration-300">
-                {getPageTitle()}
+                CopyRight 2026 @Yudiana
               </h2>
             </div>
 
             {/* Right Action Bar (Search & Profile) */}
             <div className="flex items-center gap-4 bg-white dark:bg-[#111C44] rounded-full p-2.5 shadow-sm border border-slate-100 dark:border-slate-800 transition-colors duration-300">
               {/* Search Bar */}
-              <div className="flex items-center bg-[#F4F7FE] dark:bg-[#0B1437] rounded-full px-4 py-2 w-full sm:w-56 transition-colors duration-300">
+              <div className="flex items-center bg-[#F4F7FE] dark:bg-[#0B1437] rounded-full px-4 py-2 w-full sm:w-56 transition-colors duration-300 pointer-events-none opacity-75">
                 <Search className="w-4 h-4 text-[#2B3674] dark:text-white transition-colors duration-300" />
                 <input
                   type="text"
                   placeholder="Search..."
+                  disabled
                   className="bg-transparent border-none outline-none text-sm ml-2 w-full text-[#2B3674] dark:text-white placeholder-[#8F9BBA] dark:placeholder-slate-400"
                 />
               </div>
 
               {/* Action Icons */}
-              <button className="text-[#A3AED0] hover:text-[#2B3674] dark:hover:text-white transition-colors">
+              <button disabled className="text-[#A3AED0] hover:text-[#2B3674] dark:hover:text-white transition-colors cursor-not-allowed opacity-75">
                 <Bell className="w-5 h-5" />
               </button>
               
-              <button className="text-[#A3AED0] hover:text-[#2B3674] dark:hover:text-white transition-colors">
+              <button disabled className="text-[#A3AED0] hover:text-[#2B3674] dark:hover:text-white transition-colors cursor-not-allowed opacity-75">
                 <Info className="w-5 h-5" />
               </button>
               
@@ -588,8 +589,8 @@ export default function App() {
               </button>
 
               {/* Profile Avatar */}
-              <div className="w-10 h-10 rounded-full bg-[#11047A] flex items-center justify-center text-white font-bold text-sm ml-1 cursor-pointer overflow-hidden border-2 border-white dark:border-[#111C44] shadow-sm transition-colors duration-300">
-                <img src="https://ui-avatars.com/api/?name=Alex+Sterling&background=random" alt="Profile" className="w-full h-full object-cover" />
+              <div className="w-10 h-10 rounded-full bg-[#FF5722] flex items-center justify-center text-white font-bold text-sm ml-1 cursor-default overflow-hidden border-2 border-white dark:border-[#111C44] shadow-sm transition-colors duration-300">
+                AS
               </div>
 
               {/* Mobile Sidebar Toggle (only visible on small screens inside this block) */}

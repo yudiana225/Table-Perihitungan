@@ -133,6 +133,131 @@ export function numberToWordsIndonesian(n: number): string {
   return convert(number).replace(/\s+/g, ' ').trim() + ' Rupiah';
 }
 
+/**
+ * Menghitung suku bunga tahunan (%) otomatis dari target angka cicilan.
+ */
+export function calculateAnnualRateFromInstallment(
+  nominal: number,
+  tenorMonths: number,
+  installment: number,
+  method: InterestMethod = 'FLAT'
+): number {
+  if (nominal <= 0 || tenorMonths <= 0 || installment <= 0) return 0;
+  const minPrincipalPerMonth = nominal / tenorMonths;
+  if (installment <= minPrincipalPerMonth) return 0;
+
+  if (method === 'FLAT') {
+    const monthlyInterest = installment - minPrincipalPerMonth;
+    const annualRate = (monthlyInterest * 12 / nominal) * 100;
+    return Math.max(0, Number(annualRate.toFixed(4)));
+  }
+
+  if (method === 'ANUITAS') {
+    // Cari r bulanan sehingga P * [ r*(1+r)^n / ((1+r)^n - 1) ] = installment
+    let low = 0;
+    let high = 5.0; // hingga 500% per bulan
+    for (let iter = 0; iter < 45; iter++) {
+      const mid = (low + high) / 2;
+      const factor = Math.pow(1 + mid, tenorMonths);
+      const estInstallment = (nominal * mid * factor) / (factor - 1);
+      if (estInstallment < installment) {
+        low = mid;
+      } else {
+        high = mid;
+      }
+    }
+    const rMonthly = (low + high) / 2;
+    const annualRate = rMonthly * 12 * 100;
+    return Math.max(0, Number(annualRate.toFixed(4)));
+  }
+
+  if (method === 'EFEKTIF') {
+    // Berdasarkan cicilan bulan ke-1 (angsuran awal)
+    const monthlyInterest = installment - minPrincipalPerMonth;
+    const annualRate = (monthlyInterest * 12 / nominal) * 100;
+    return Math.max(0, Number(annualRate.toFixed(4)));
+  }
+
+  return 0;
+}
+
+/**
+ * Ringkasan otomatis bunga dan cicilan berdasarkan parameter saat ini
+ */
+export function getInterestSummary(
+  nominal: number,
+  annualRate: number,
+  tenorMonths: number,
+  method: InterestMethod
+) {
+  if (nominal <= 0 || tenorMonths <= 0) {
+    return {
+      monthlyInterest: 0,
+      totalInterest: 0,
+      monthlyInstallment: 0,
+      annualRate: 0,
+      monthlyRate: 0,
+      principalPerMonth: 0,
+      minInstallment: 0,
+    };
+  }
+
+  const monthlyRate = annualRate / 12;
+  const rateDecimal = annualRate / 100 / 12;
+  const principalPerMonth = Math.round(nominal / tenorMonths);
+  const minInstallment = principalPerMonth;
+
+  if (method === 'FLAT') {
+    const monthlyInterest = Math.round((nominal * (annualRate / 100)) / 12);
+    const totalInterest = monthlyInterest * tenorMonths;
+    const monthlyInstallment = principalPerMonth + monthlyInterest;
+    return {
+      monthlyInterest,
+      totalInterest,
+      monthlyInstallment,
+      annualRate,
+      monthlyRate,
+      principalPerMonth,
+      minInstallment,
+    };
+  }
+
+  if (method === 'ANUITAS') {
+    let monthlyInstallment = 0;
+    if (rateDecimal === 0) {
+      monthlyInstallment = principalPerMonth;
+    } else {
+      const factor = Math.pow(1 + rateDecimal, tenorMonths);
+      monthlyInstallment = Math.round((nominal * rateDecimal * factor) / (factor - 1));
+    }
+    const totalInterest = Math.max(0, (monthlyInstallment * tenorMonths) - nominal);
+    const firstMonthInterest = Math.round(nominal * rateDecimal);
+    return {
+      monthlyInterest: firstMonthInterest,
+      totalInterest,
+      monthlyInstallment,
+      annualRate,
+      monthlyRate,
+      principalPerMonth: Math.max(0, monthlyInstallment - firstMonthInterest),
+      minInstallment,
+    };
+  }
+
+  // EFEKTIF
+  const firstMonthInterest = Math.round(nominal * rateDecimal);
+  const totalInterest = Math.round((nominal * (annualRate / 100) * (tenorMonths + 1)) / 24);
+  const monthlyInstallment = principalPerMonth + firstMonthInterest;
+  return {
+    monthlyInterest: firstMonthInterest,
+    totalInterest,
+    monthlyInstallment,
+    annualRate,
+    monthlyRate,
+    principalPerMonth,
+    minInstallment,
+  };
+}
+
 export function calculateLoan(params: LoanParams): LoanCalculationResult {
   const { nominal, annualRate, tenorMonths, startMonth, startYear, method } = params;
 

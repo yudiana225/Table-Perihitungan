@@ -1,6 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { LoanParams, InterestMethod } from '../types';
-import { INDONESIAN_MONTHS, formatRupiah, formatPercent } from '../utils/calculator';
+import {
+  INDONESIAN_MONTHS,
+  formatRupiah,
+  formatPercent,
+  formatNumberIndo,
+  getInterestSummary,
+  calculateAnnualRateFromInstallment,
+} from '../utils/calculator';
 import { LoanFeesManager } from './LoanFeesManager';
 import {
   Calculator,
@@ -13,6 +20,10 @@ import {
   ChevronUp,
   Sliders,
   Check,
+  CreditCard,
+  Sparkles,
+  TrendingUp,
+  HelpCircle,
 } from 'lucide-react';
 
 interface LoanFormProps {
@@ -45,14 +56,72 @@ export const LoanForm: React.FC<LoanFormProps> = ({ params, onChange, onReset })
 
   const monthlyRate = params.annualRate / 12;
 
+  // Live calculation of installment and interest summary
+  const interestSummary = useMemo(() => {
+    return getInterestSummary(params.nominal, params.annualRate, params.tenorMonths, params.method);
+  }, [params.nominal, params.annualRate, params.tenorMonths, params.method]);
+
+  // Installment parameter local state
+  const [installmentInput, setInstallmentInput] = useState<number>(interestSummary.monthlyInstallment || 0);
+  const [isTypingInstallment, setIsTypingInstallment] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isTypingInstallment) {
+      setInstallmentInput(interestSummary.monthlyInstallment);
+    }
+  }, [interestSummary.monthlyInstallment, isTypingInstallment]);
+
   // Derive the displayed rate value based on the selected mode
   const displayedRate = rateInputMode === 'YEAR' ? params.annualRate : Number(monthlyRate.toFixed(4));
 
   const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsTypingInstallment(false);
     const value = Math.max(0, Number(e.target.value));
     const newAnnualRate = rateInputMode === 'YEAR' ? value : value * 12;
     updateParam('annualRate', newAnnualRate);
   };
+
+  const handleInstallmentChange = (value: number) => {
+    setIsTypingInstallment(true);
+    setInstallmentInput(value);
+    if (params.nominal > 0 && params.tenorMonths > 0) {
+      const calculatedRate = calculateAnnualRateFromInstallment(
+        params.nominal,
+        params.tenorMonths,
+        value,
+        params.method
+      );
+      updateParam('annualRate', calculatedRate);
+    }
+  };
+
+  const handleAdjustInstallment = (delta: number) => {
+    setIsTypingInstallment(false);
+    const current = interestSummary.monthlyInstallment || 0;
+    const nextVal = Math.max(interestSummary.minInstallment, current + delta);
+    handleInstallmentChange(nextVal);
+  };
+
+  const handleRoundInstallment = () => {
+    setIsTypingInstallment(false);
+    const current = interestSummary.monthlyInstallment || 0;
+    const roundUnit = current > 5000000 ? 100000 : 50000;
+    const rounded = Math.round(current / roundUnit) * roundUnit;
+    const finalVal = Math.max(interestSummary.minInstallment, rounded);
+    handleInstallmentChange(finalVal);
+  };
+
+  // Smart Installment Target Presets based on nominal and tenor
+  const smartInstallmentPresets = useMemo(() => {
+    if (interestSummary.minInstallment <= 0) return [];
+    const min = interestSummary.minInstallment;
+    const step = min < 1000000 ? 50000 : min < 5000000 ? 250000 : min < 20000000 ? 500000 : 1000000;
+    const p1 = Math.ceil(min / step) * step;
+    const p2 = p1 + step;
+    const p3 = p1 + step * 2;
+    const p4 = p1 + step * 4;
+    return Array.from(new Set([p1, p2, p3, p4])).filter((v) => v > 0);
+  }, [interestSummary.minInstallment]);
 
   return (
     <div id="loan-form-container" className="space-y-4">
@@ -70,7 +139,7 @@ export const LoanForm: React.FC<LoanFormProps> = ({ params, onChange, onReset })
               </div>
               <div>
                 <h2 className="text-xl font-bold tracking-tight text-white">Simulasi Rate</h2>
-                <p className="text-xs text-indigo-200">Atur nominal, bunga & jangka waktu</p>
+                <p className="text-xs text-indigo-200">Atur nominal, angka cicilan & bunga</p>
               </div>
             </div>
             <button
@@ -129,25 +198,199 @@ export const LoanForm: React.FC<LoanFormProps> = ({ params, onChange, onReset })
               </div>
             </div>
 
-            {/* Input 2: Suku Bunga & Tenor Grid */}
-            <div className="grid grid-cols-2 gap-4 pt-1">
-              {/* Suku Bunga */}
+            {/* Input 2: Tenor & Metode Bunga */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              {/* Tenor */}
               <div className="group">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider">
-                    <span className="text-indigo-200">Bunga</span>
+                <label htmlFor="input-tenor" className="text-xs font-semibold text-indigo-200 uppercase tracking-wider mb-1 block">
+                  Tenor (Jangka Waktu)
+                </label>
+                <div className="border-b border-indigo-400 focus-within:border-white transition-colors pb-1 flex items-baseline">
+                  <input
+                    id="input-tenor"
+                    type="number"
+                    min="1"
+                    max="360"
+                    value={params.tenorMonths || ''}
+                    onChange={(e) => updateParam('tenorMonths', Math.max(0, parseInt(e.target.value) || 0))}
+                    className="bg-transparent text-2xl font-extrabold text-white w-full focus:outline-none placeholder-indigo-300/50"
+                    placeholder="12"
+                  />
+                  <span className="text-xs font-bold text-indigo-200 ml-1">Bulan</span>
+                </div>
+
+                {/* Tenor Quick Chips */}
+                <div className="flex flex-wrap gap-1 pt-2">
+                  {TENOR_PRESETS.slice(0, 5).map((months) => (
+                    <button
+                      key={months}
+                      type="button"
+                      onClick={() => updateParam('tenorMonths', months)}
+                      className={`text-[11px] px-2 py-0.5 rounded-md font-medium transition-all ${
+                        params.tenorMonths === months
+                          ? 'bg-white text-indigo-700 font-bold shadow-xs'
+                          : 'bg-indigo-700/60 text-indigo-100 hover:bg-indigo-700'
+                      }`}
+                    >
+                      {months} Bln
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Metode Perhitungan Bunga */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-indigo-200 uppercase tracking-wider block">
+                  Metode Bunga
+                </label>
+                <div className="grid grid-cols-3 gap-1.5 pt-0.5">
+                  {(['FLAT', 'EFEKTIF', 'ANUITAS'] as InterestMethod[]).map((method) => (
+                    <button
+                      key={method}
+                      type="button"
+                      id={`method-btn-${method}`}
+                      onClick={() => updateParam('method', method)}
+                      className={`py-2 px-1.5 rounded-xl text-xs font-bold text-center transition-all ${
+                        params.method === method
+                          ? 'bg-white text-indigo-900 shadow-md ring-2 ring-amber-400'
+                          : 'bg-indigo-700/60 text-indigo-100 hover:bg-indigo-700'
+                      }`}
+                    >
+                      {method === 'FLAT' ? 'Flat' : method === 'EFEKTIF' ? 'Efektif' : 'Anuitas'}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] text-indigo-200/80 pt-1">
+                  {params.method === 'FLAT'
+                    ? 'Bunga flat tetap per bulan'
+                    : params.method === 'EFEKTIF'
+                    ? 'Bunga menurun atas sisa pokok'
+                    : 'Cicilan bulanan tetap (anuitas)'}
+                </p>
+              </div>
+            </div>
+
+            {/* Parameter Angka Cicilan & Bunga Section */}
+            <div className="space-y-4 pt-2">
+              {/* Parameter Baru: Angka Cicilan (Per Bulan) */}
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 transition-all shadow-inner">
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <CreditCard className="w-4 h-4 text-amber-300" />
+                    <label htmlFor="input-angka-cicilan" className="text-xs font-bold text-amber-200 uppercase tracking-wider block">
+                      Parameter Angka Cicilan (Per Bulan)
+                    </label>
+                  </div>
+                  <span className="text-xs font-black text-amber-300 bg-amber-400/20 px-2.5 py-0.5 rounded-lg border border-amber-300/30 shadow-xs">
+                    {formatRupiah(interestSummary.monthlyInstallment)}/bln
+                  </span>
+                </div>
+
+                <div className="relative border-b-2 border-amber-300/60 focus-within:border-amber-300 transition-colors pb-1 flex items-baseline">
+                  <span className="text-lg font-bold text-amber-200 mr-2">Rp</span>
+                  <input
+                    id="input-angka-cicilan"
+                    type="number"
+                    min="0"
+                    step="50000"
+                    value={installmentInput || ''}
+                    onChange={(e) => handleInstallmentChange(Number(e.target.value))}
+                    onBlur={() => {
+                      setIsTypingInstallment(false);
+                      setInstallmentInput(interestSummary.monthlyInstallment);
+                    }}
+                    className="bg-transparent text-2xl font-black text-white w-full focus:outline-none placeholder-indigo-200/40"
+                    placeholder={String(interestSummary.monthlyInstallment || 0)}
+                  />
+                </div>
+
+                {/* Quick adjustments for Angka Cicilan */}
+                <div className="flex flex-wrap items-center justify-between gap-1.5 pt-2 text-[11px]">
+                  <div className="flex flex-wrap gap-1">
                     <button
                       type="button"
-                      onClick={() => setRateInputMode(m => m === 'YEAR' ? 'MONTH' : 'YEAR')}
-                      className="px-1.5 py-0.5 rounded-md bg-indigo-500/30 text-white hover:bg-indigo-500/50 transition-colors ml-1"
+                      onClick={() => handleAdjustInstallment(-100000)}
+                      className="px-2 py-0.5 rounded-md bg-white/15 text-indigo-100 hover:bg-white/25 transition-colors font-medium"
+                      title="Kurangi cicilan Rp 100.000"
+                    >
+                      -100 Rb
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAdjustInstallment(100000)}
+                      className="px-2 py-0.5 rounded-md bg-white/15 text-indigo-100 hover:bg-white/25 transition-colors font-medium"
+                      title="Tambah cicilan Rp 100.000"
+                    >
+                      +100 Rb
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAdjustInstallment(500000)}
+                      className="px-2 py-0.5 rounded-md bg-white/15 text-indigo-100 hover:bg-white/25 transition-colors font-medium"
+                      title="Tambah cicilan Rp 500.000"
+                    >
+                      +500 Rb
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleRoundInstallment}
+                    className="px-2 py-0.5 rounded-md bg-amber-400/25 text-amber-200 hover:bg-amber-400/40 font-semibold transition-colors border border-amber-400/30"
+                    title="Bulatkan cicilan ke ratusan ribu terdekat"
+                  >
+                    Bulatkan Cicilan
+                  </button>
+                </div>
+
+                {/* Smart Target Cicilan Presets */}
+                {smartInstallmentPresets.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-white/10 mt-2">
+                    <span className="text-[10px] text-indigo-200 font-medium">Pilihan Target:</span>
+                    {smartInstallmentPresets.map((presetVal) => (
+                      <button
+                        key={presetVal}
+                        type="button"
+                        onClick={() => handleInstallmentChange(presetVal)}
+                        className={`text-[11px] px-2 py-0.5 rounded-md transition-all font-semibold ${
+                          Math.abs(interestSummary.monthlyInstallment - presetVal) < 1000
+                            ? 'bg-amber-400 text-slate-900 font-bold shadow-xs'
+                            : 'bg-white/15 text-indigo-100 hover:bg-white/25'
+                        }`}
+                      >
+                        {formatRupiah(presetVal)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Minimum principal warning */}
+                {interestSummary.minInstallment > 0 &&
+                  installmentInput > 0 &&
+                  installmentInput < interestSummary.minInstallment && (
+                    <p className="text-[11px] text-amber-200 bg-amber-500/20 rounded-lg p-1.5 mt-2 border border-amber-300/30">
+                      ⚠️ Cicilan minimum untuk pokok adalah {formatRupiah(interestSummary.minInstallment)}/bln. Bunga saat ini dihitung 0%.
+                    </p>
+                  )}
+              </div>
+
+              {/* Suku Bunga (%) Input */}
+              <div className="group bg-indigo-900/40 rounded-2xl p-3.5 border border-indigo-400/30">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider">
+                    <span className="text-indigo-200">Suku Bunga Pinjaman</span>
+                    <button
+                      type="button"
+                      onClick={() => setRateInputMode((m) => (m === 'YEAR' ? 'MONTH' : 'YEAR'))}
+                      className="px-1.5 py-0.5 rounded-md bg-indigo-500/40 text-white hover:bg-indigo-500/60 transition-colors ml-1 font-bold text-[10px]"
                       title="Klik untuk mengubah mode input bunga (Tahun/Bulan)"
                     >
                       (% / {rateInputMode === 'YEAR' ? 'THN' : 'BLN'})
                     </button>
                   </div>
-                  <span className="text-[11px] text-indigo-300">
-                    {rateInputMode === 'YEAR' 
-                      ? `~${monthlyRate.toFixed(2)}%/bln` 
+                  <span className="text-xs font-bold text-amber-300">
+                    {rateInputMode === 'YEAR'
+                      ? `~${monthlyRate.toFixed(2)}%/bln`
                       : `~${params.annualRate.toFixed(2)}%/thn`}
                   </span>
                 </div>
@@ -157,76 +400,123 @@ export const LoanForm: React.FC<LoanFormProps> = ({ params, onChange, onReset })
                     type="number"
                     min="0"
                     max="100"
-                    step="0.1"
-                    value={displayedRate || ''}
+                    step="0.01"
+                    value={displayedRate !== undefined && !isNaN(displayedRate) ? displayedRate : ''}
                     onChange={handleRateChange}
-                    className="bg-transparent text-2xl font-extrabold text-white w-full focus:outline-none placeholder-indigo-300/50"
+                    className="bg-transparent text-xl font-extrabold text-white w-full focus:outline-none placeholder-indigo-300/50"
                     placeholder="14"
                   />
-                  <span className="text-lg font-bold text-indigo-200">%</span>
+                  <span className="text-base font-bold text-indigo-200">%</span>
                 </div>
               </div>
 
-              {/* Tenor */}
-              <div className="group">
-                <label htmlFor="input-tenor" className="text-xs font-semibold text-indigo-200 uppercase tracking-wider mb-1 block">
-                  Tenor (Bulan)
-                </label>
-                <div className="border-b border-indigo-400 focus-within:border-white transition-colors pb-1 flex items-baseline">
-                  <input
-                    id="input-tenor"
-                    type="number"
-                    min="0"
-                    max="360"
-                    value={params.tenorMonths || ''}
-                    onChange={(e) => updateParam('tenorMonths', Math.max(0, parseInt(e.target.value) || 0))}
-                    className="bg-transparent text-2xl font-extrabold text-white w-full focus:outline-none placeholder-indigo-300/50"
-                    placeholder="12"
-                  />
-                  <span className="text-xs font-bold text-indigo-200 ml-1">Bulan</span>
+              {/* Otomatis Menampilkan Bunga (Live Real-Time Interest Card) */}
+              <div
+                id="panel-bunga-otomatis"
+                className="bg-gradient-to-br from-[#1E1B4B]/90 via-[#2E1065]/90 to-[#1E1B4B]/90 rounded-2xl p-4 border border-amber-300/30 shadow-lg space-y-3"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-amber-400" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-amber-200">
+                      Otomatis Menampilkan Bunga
+                    </span>
+                  </div>
+                  <span className="text-[10px] bg-emerald-400/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-400/30 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+                    Otomatis Terhitung
+                  </span>
                 </div>
-              </div>
-            </div>
 
-            {/* Tenor Quick Chips */}
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {TENOR_PRESETS.map((months) => (
-                <button
-                  key={months}
-                  type="button"
-                  onClick={() => updateParam('tenorMonths', months)}
-                  className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-all ${
-                    params.tenorMonths === months
-                      ? 'bg-white text-indigo-700 font-bold shadow-xs'
-                      : 'bg-indigo-700/60 text-indigo-100 hover:bg-indigo-700'
-                  }`}
-                >
-                  {months} Bln
-                </button>
-              ))}
-            </div>
+                {/* 2-Column KPI Bunga */}
+                <div className="grid grid-cols-2 gap-2.5 pt-0.5">
+                  {/* Bunga per Bulan */}
+                  <div className="bg-white/10 rounded-xl p-3 border border-white/10 flex flex-col justify-between">
+                    <span className="text-[10px] text-indigo-200 font-semibold uppercase tracking-wider block">
+                      Bunga per Bulan
+                    </span>
+                    <span className="text-lg sm:text-xl font-black text-amber-300 tracking-tight block truncate mt-0.5">
+                      {formatRupiah(interestSummary.monthlyInterest)}
+                    </span>
+                    <span className="text-[10px] text-indigo-200/90 font-medium mt-1">
+                      {formatPercent(interestSummary.monthlyRate, 2)} / bulan
+                    </span>
+                  </div>
 
-            {/* Metode Perhitungan Bunga */}
-            <div className="space-y-1.5 pt-2">
-              <label className="text-xs font-semibold text-indigo-200 uppercase tracking-wider block">
-                Metode Bunga
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {(['FLAT', 'EFEKTIF', 'ANUITAS'] as InterestMethod[]).map((method) => (
-                  <button
-                    key={method}
-                    type="button"
-                    id={`method-btn-${method}`}
-                    onClick={() => updateParam('method', method)}
-                    className={`py-2 px-2.5 rounded-xl text-xs font-bold text-center transition-all ${
-                      params.method === method
-                        ? 'bg-white text-indigo-900 shadow-md ring-2 ring-amber-400'
-                        : 'bg-indigo-700/60 text-indigo-100 hover:bg-indigo-700'
-                    }`}
-                  >
-                    {method === 'FLAT' ? 'Flat' : method === 'EFEKTIF' ? 'Efektif' : 'Anuitas'}
-                  </button>
-                ))}
+                  {/* Total Bunga Pinjaman */}
+                  <div className="bg-white/10 rounded-xl p-3 border border-white/10 flex flex-col justify-between">
+                    <span className="text-[10px] text-indigo-200 font-semibold uppercase tracking-wider block">
+                      Total Akumulasi Bunga
+                    </span>
+                    <span className="text-lg sm:text-xl font-black text-emerald-300 tracking-tight block truncate mt-0.5">
+                      {formatRupiah(interestSummary.totalInterest)}
+                    </span>
+                    <span className="text-[10px] text-indigo-200/90 font-medium mt-1">
+                      {formatPercent(interestSummary.annualRate, 2)} / tahun ({params.tenorMonths} bln)
+                    </span>
+                  </div>
+                </div>
+
+                {/* Komposisi Cicilan: Pokok vs Bunga */}
+                <div className="pt-2 border-t border-white/10 text-[11px] space-y-1.5">
+                  <div className="flex items-center justify-between text-indigo-100">
+                    <span className="font-medium">Komposisi Cicilan:</span>
+                    <span className="font-bold text-white">
+                      Pokok {formatRupiah(interestSummary.principalPerMonth)} + Bunga {formatRupiah(interestSummary.monthlyInterest)}
+                    </span>
+                  </div>
+
+                  {/* Visual Proportion Bar */}
+                  <div className="w-full bg-black/40 rounded-full h-2 overflow-hidden flex">
+                    <div
+                      className="bg-indigo-300 h-full transition-all duration-300"
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          Math.max(
+                            0,
+                            (interestSummary.principalPerMonth / (interestSummary.monthlyInstallment || 1)) * 100
+                          )
+                        )}%`,
+                      }}
+                      title="Porsi Pokok"
+                    />
+                    <div
+                      className="bg-amber-400 h-full transition-all duration-300"
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          Math.max(
+                            0,
+                            (interestSummary.monthlyInterest / (interestSummary.monthlyInstallment || 1)) * 100
+                          )
+                        )}%`,
+                      }}
+                      title="Porsi Bunga"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10px] text-indigo-200 pt-0.5">
+                    <span className="flex items-center gap-1 font-medium">
+                      <span className="w-2 h-2 rounded-full bg-indigo-300 inline-block" />
+                      Pokok:{' '}
+                      {(
+                        (interestSummary.principalPerMonth / (interestSummary.monthlyInstallment || 1)) *
+                        100
+                      ).toFixed(0)}
+                      %
+                    </span>
+                    <span className="flex items-center gap-1 font-medium text-amber-300">
+                      <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
+                      Bunga:{' '}
+                      {(
+                        (interestSummary.monthlyInterest / (interestSummary.monthlyInstallment || 1)) *
+                        100
+                      ).toFixed(0)}
+                      %
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
